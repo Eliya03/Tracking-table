@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מעקב קודים</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            direction: rtl;
+        }
+
+        .table th, .table td {
+            vertical-align: middle;
+            position: relative;
+        }
+
+        thead.thead-dark th {
+            background-color: #343a40;
+            color: #fff;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .editable-header {
+            cursor: pointer;
+            border-bottom: 1px dashed #fff;
+        }
+
+        .editable-header input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            text-align: center;
+            width: 100%;
+        }
+
+        .dropdown-btn {
+            position: absolute;
+            left: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 2px 5px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            left: 0;
+            top: 100%;
+            display: none;
+            z-index: 1;
+            width: 100%;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center">טבלת מעקב קודים</h2>
+        <button id="addColumnBtn" class="btn btn-primary mb-3">הוסף עמודה</button>
+        <table id="trackingTable" class="table table-bordered table-hover text-center">
+            <thead class="thead-dark">
+                <tr id="headerRow">
+                    <th class="editable-header"><input type="text" placeholder="כותרת 1"></th>
+                    <th class="editable-header"><input type="text" placeholder="כותרת 2"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <input type="text" class="form-control">
+                        <span class="dropdown-btn btn btn-secondary">&#9660;</span>
+                        <ul class="dropdown-menu list-unstyled">
+                            <li><a href="#" class="dropdown-item">True</a></li>
+                            <li><a href="#" class="dropdown-item">False</a></li>
+                        </ul>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control">
+                        <span class="dropdown-btn btn btn-secondary">&#9660;</span>
+                        <ul class="dropdown-menu list-unstyled">
+                            <li><a href="#" class="dropdown-item">True</a></li>
+                            <li><a href="#" class="dropdown-item">False</a></li>
+                        </ul>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <button id="addRowBtn" class="btn btn-success">הוסף שורה</button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // הוספת שורה חדשה
+        document.getElementById('addRowBtn').addEventListener('click', function () {
+            let table = document.getElementById('trackingTable').getElementsByTagName('tbody')[0];
+            let newRow = table.insertRow();
+            
+            // הוספת תאים עם שדות קלט ותיבת בחירה
+            for (let i = 0; i < table.rows[0].cells.length; i++) {
+                let newCell = newRow.insertCell(i);
+                newCell.innerHTML = `
+                    <input type="text" class="form-control">
+                    <span class="dropdown-btn btn btn-secondary">&#9660;</span>
+                    <ul class="dropdown-menu list-unstyled">
+                        <li><a href="#" class="dropdown-item">True</a></li>
+                        <li><a href="#" class="dropdown-item">False</a></li>
+                    </ul>
+                `;
+            }
+        });
+
+        // הוספת עמודה חדשה
+        document.getElementById('addColumnBtn').addEventListener('click', function () {
+            let headerRow = document.getElementById('headerRow');
+            let newHeaderCell = document.createElement('th');
+            newHeaderCell.className = 'editable-header';
+            newHeaderCell.innerHTML = '<input type="text" placeholder="כותרת חדשה">';
+            headerRow.appendChild(newHeaderCell);
+            
+            let tableRows = document.getElementById('trackingTable').getElementsByTagName('tbody')[0].rows;
+            for (let i = 0; i < tableRows.length; i++) {
+                let newCell = tableRows[i].insertCell(-1); // Insert at the end
+                newCell.innerHTML = `
+                    <input type="text" class="form-control">
+                    <span class="dropdown-btn btn btn-secondary">&#9660;</span>
+                    <ul class="dropdown-menu list-unstyled">
+                        <li><a href="#" class="dropdown-item">True</a></li>
+                        <li><a href="#" class="dropdown-item">False</a></li>
+                    </ul>
+                `;
+            }
+        });
+
+        // הוספת אירועים לכפתור התפריט הנפתח
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('dropdown-btn')) {
+                e.target.nextElementSibling.classList.toggle('show');
+            } else if (e.target.classList.contains('dropdown-item')) {
+                let input = e.target.closest('td').querySelector('input');
+                input.value = e.target.textContent;
+                e.target.closest('.dropdown-menu').classList.remove('show');
+            } else {
+                document.querySelectorAll('.dropdown-menu').forEach(function (menu) {
+                    menu.classList.remove('show');
+                });
+            }
+        });
+
+        // שינוי שם העמודות
+        document.querySelectorAll('.editable-header').forEach(function (headerCell) {
+            headerCell.addEventListener('click', function () {
+                let currentText = headerCell.innerText;
+                let input = document.createElement('input');
+                input.type = 'text';
+                input.value = currentText;
+                input.addEventListener('blur', function () {
+                    headerCell.innerText = input.value;
+                });
+                input.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') {
+                        headerCell.innerText = input.value;
+                    }
+                });
+                headerCell.innerHTML = '';
+                headerCell.appendChild(input);
+                input.focus();
+            });
+        });
+    </script>
+</body>
+</html>
